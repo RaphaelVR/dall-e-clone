@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "dotenv": "^16.4.5",
     "eslint": "^8.32.0",
     "eslintrc": "^1.0.6",
     "file-saver": "^2.0.5",
