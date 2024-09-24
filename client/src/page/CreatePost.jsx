@@ -5,9 +5,8 @@ import { preview } from '../assets';
 import { getRandomPrompt } from '../utils';
 import { FormField, Loader } from '../components';
 
-
 const CreatePost = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate();  
 
   const [form, setForm] = useState({
     name: '',
@@ -29,58 +28,61 @@ const CreatePost = () => {
     if (form.prompt) {
       try {
         setGeneratingImg(true);
-        const response = await fetch('https://api.openai.com/v1/images/generations', {
+        const response = await fetch('http://localhost:8080/api/v1/dalle', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',  
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             prompt: form.prompt,
           }),
         });
-        
+
         const data = await response.json();
         setForm({ ...form, photo: `data:image/jpeg;base64,${data.photo}` });
-        console.log(data);
-        console.log(form);
-        console.log(data.data);
       } catch (err) {
-        console.error(err);
-        alert('Failed to generate image. Please try again.');
+        alert(err);
       } finally {
         setGeneratingImg(false);
       }
     } else {
-      alert('Please provide a proper prompt.');
+      alert('Please provide proper prompt');
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (form.prompt && form.photo) {
       setLoading(true);
-      try {
-        const response = await fetch('https://api.openai.com/v1/images/generations', {
+      try {        
+        const response = await fetch('http://localhost:8080/api/v1/post', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ ...form }),
+          body: JSON.stringify({ 
+            name: form.name,
+            prompt: form.prompt,
+            photo: form.photo, 
+          }),
         });
-        console.log(response);
-        await response.json();
-        alert('Image shared successfully.');
-        navigate('/');
+
+        const data = await response.json();
+        if (response.ok) {
+          alert('Post created successfully');
+          navigate('/');
+        } else {
+          throw new Error(data.message || 'Failed to create post');
+        }
       } catch (err) {
         console.error(err);
-        alert('Failed to share image. Please try again.');
+        alert('Failed to create post. Please try again.');
       } finally {
         setLoading(false);
       }
     } else {
-      alert('Please generate an image with proper details.');
+      alert('Please generate an image with proper details');
     }
   };
 
